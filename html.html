@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Pair Game</title>
+    <style>
+        body {
+            background: #0d1a75;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            color: white;
+        }
+        h1 {
+            margin: 20px 0;
+        }
+        .settings, .stats {
+            margin: 10px;
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .board {
+            display: grid;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .card {
+            width: 80px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: deepskyblue;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 2em;
+            user-select: none;
+        }
+        .card.flipped, .card.matched {
+            background: gold;
+            color: black;
+            cursor: default;
+        }
+        .controls button {
+            padding: 8px 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background: #ffc107;
+            color: black;
+            cursor: pointer;
+        }
+        .controls button:hover {
+            background: #ffca2c;
+        }
+    </style>
+</head>
+<body>
+<h1>Memory Pair Game</h1>
+<div class="settings">
+    <label>Гравці: <input type="text" id="player1" placeholder="Гравець 1"> <input type="text" id="player2" placeholder="Гравець 2"></label><br>
+    <label>Розмір поля:
+        <select id="gridSize">
+            <option value="4">4x4</option>
+            <option value="6">6x6</option>
+        </select>
+    </label><br>
+    <label>Складність:
+        <select id="difficulty">
+            <option value="easy">Легко (3 хв)</option>
+            <option value="normal">Середньо (2 хв)</option>
+            <option value="hard">Складно (1 хв)</option>
+        </select>
+    </label><br>
+    <label>Кількість раундів: <input type="number" id="rounds" min="1" value="1"></label><br>
+    <div class="controls">
+        <button onclick="resetSettings()">Скинути налаштування</button>
+        <button onclick="startGame()">Розпочати гру</button>
+    </div>
+</div>
+<div class="stats">
+    <div id="timer">Час: 0</div>
+    <div id="moves">Ходи: 0</div>
+</div>
+<div id="gameBoard" class="board"></div>
+
+<script>
+    let state = {};
+
+    const shuffle = arr => [...arr].sort(() => Math.random() - 0.5);
+
+    const createDeck = size => {
+        const count = (size * size) / 2;
+        const symbols = Array.from({length: count}, (_, i) => i + 1);
+        return shuffle([...symbols, ...symbols]);
+    };
+
+    const renderBoard = (deck, size) => {
+        const board = document.getElementById('gameBoard');
+        board.innerHTML = '';
+        board.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+        deck.forEach((value, index) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.dataset.index = index;
+            card.onclick = () => flipCard(index);
+            board.appendChild(card);
+        });
+    };
+
+    const flipCard = index => {
+        if (state.lock || state.matched.includes(index)) return;
+        const board = document.querySelectorAll('.card');
+        board[index].textContent = state.deck[index];
+        board[index].classList.add('flipped');
+        state.flipped.push(index);
+
+        if (state.flipped.length === 2) {
+            state.moves++;
+            document.getElementById('moves').innerText = `Ходи: ${state.moves}`;
+            checkMatch();
+        }
+    };
+
+    const checkMatch = () => {
+        const [i1, i2] = state.flipped;
+        const board = document.querySelectorAll('.card');
+        if (state.deck[i1] === state.deck[i2]) {
+            state.matched.push(i1, i2);
+            board[i1].classList.add('matched');
+            board[i2].classList.add('matched');
+            if (state.matched.length === state.deck.length) endGame();
+        } else {
+            state.lock = true;
+            setTimeout(() => {
+                board[i1].textContent = '';
+                board[i2].textContent = '';
+                board[i1].classList.remove('flipped');
+                board[i2].classList.remove('flipped');
+                state.lock = false;
+            }, 1000);
+        }
+        state.flipped = [];
+    };
+
+    const startTimer = minutes => {
+        state.time = minutes * 60;
+        clearInterval(state.timerId);
+        state.timerId = setInterval(() => {
+            state.time--;
+            document.getElementById('timer').innerText = `Час: ${state.time}s`;
+            if (state.time <= 0) {
+                clearInterval(state.timerId);
+                alert('Час вичерпано! Гра завершена.');
+            }
+        }, 1000);
+    };
+
+    const startGame = () => {
+        const size = parseInt(document.getElementById('gridSize').value);
+        const diff = document.getElementById('difficulty').value;
+        const times = {easy: 3, normal: 2, hard: 1};
+        const deck = createDeck(size);
+
+        state = {
+            deck,
+            flipped: [],
+            matched: [],
+            lock: false,
+            moves: 0,
+            timerId: null,
+            time: 0
+        };
+
+        document.getElementById('moves').innerText = 'Ходи: 0';
+        renderBoard(deck, size);
+        startTimer(times[diff]);
+    };
+
+    const resetSettings = () => {
+        document.getElementById('player1').value = '';
+        document.getElementById('player2').value = '';
+        document.getElementById('gridSize').value = '4';
+        document.getElementById('difficulty').value = 'easy';
+        document.getElementById('rounds').value = '1';
+    };
+
+    const endGame = () => {
+        clearInterval(state.timerId);
+        alert(`Вітаємо! Ви завершили гру за ${state.moves} ходів!`);
+    };
+</script>
+</body>
+</html>
