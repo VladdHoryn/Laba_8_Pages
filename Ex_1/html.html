@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Pair Game</title>
+    <link rel="stylesheet" href="css.css">
+</head>
+<body>
+<h1>Memory Pair Game</h1>
+<div class="settings">
+    <label>Кількість гравців:</label>
+    <select id="playersSelect">
+        <option value="1">1 Гравець</option>
+        <option value="2">2 Гравці</option>
+    </select>
+    <div id="namesBlock" style="display:none">
+        <label>Ім'я гравця 1:</label>
+        <input id="player1Name" type="text" placeholder="Гравець 1">
+        <label>Ім'я гравця 2:</label>
+        <input id="player2Name" type="text" placeholder="Гравець 2">
+    </div>
+    <label>Розмір поля (мін. 4x4):</label>
+    <input id="rows" type="number" value="4" min="4"> x <input id="cols" type="number" value="4" min="4">
+    <label>Складність:</label>
+    <select id="difficulty">
+        <option value="easy">Легко (3 хв)</option>
+        <option value="normal">Нормально (2 хв)</option>
+        <option value="hard">Важко (1 хв)</option>
+    </select>
+    <button onclick="startGame()">Розпочати гру</button>
+    <button onclick="resetSettings()">Скинути налаштування</button>
+</div>
+<div class="stats"></div>
+<div class="board"></div>
+<script src="js.js"></script>
+</body>
+</html>

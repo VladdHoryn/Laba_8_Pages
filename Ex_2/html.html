@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Слайдер - Карусель</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f0f0f0;
+    }
+    .slider {
+      position: relative;
+      width: 80%;
+      max-width: 600px;
+      overflow: hidden;
+      border-radius: 10px;
+      background: white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .slider-track {
+      display: flex;
+      transition: transform 0.5s ease;
+    }
+    .slide {
+      flex: 0 0 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      height: 300px;
+    }
+    .slider-arrows {
+      position: absolute;
+      top: 50%;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      transform: translateY(-50%);
+    }
+    .slider-arrows button {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 30px;
+      color: dodgerblue;
+      user-select: none;
+    }
+    .slider-dots {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+    }
+    .slider-dots button {
+      width: 10px;
+      height: 10px;
+      border: none;
+      border-radius: 50%;
+      background: #ccc;
+      cursor: pointer;
+    }
+    .slider-dots button.active {
+      background: dodgerblue;
+    }
+    @media (max-width: 600px) {
+      .slide {
+        font-size: 18px;
+        height: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="slider" id="slider"></div>
+<script>
+  class SimpleSlider {
+    constructor(selector, config = {}) {
+      this.container = document.querySelector(selector);
+      this.slides = config.slides || ["Slide 1", "Slide 2", "Slide 3"];
+      this.duration = config.duration || 500;
+      this.autoplay = config.autoplay || false;
+      this.showArrows = config.showArrows !== false;
+      this.showDots = config.showDots !== false;
+      this.current = 0;
+      this.timer = null;
+
+      this.createSlider();
+      this.update();
+      this.addEvents();
+      if (this.autoplay) this.startAutoplay();
+    }
+
+    createSlider() {
+      this.track = document.createElement('div');
+      this.track.className = 'slider-track';
+      this.container.appendChild(this.track);
+
+      this.slides.forEach(content => {
+        const slide = document.createElement('div');
+        slide.className = 'slide';
+        slide.innerHTML = content;
+        this.track.appendChild(slide);
+      });
+
+      if (this.showArrows) {
+        this.arrows = document.createElement('div');
+        this.arrows.className = 'slider-arrows';
+        this.arrows.innerHTML = `
+                <button class="prev">←</button>
+                <button class="next">→</button>`;
+        this.container.appendChild(this.arrows);
+      }
+
+      if (this.showDots) {
+        this.dots = document.createElement('div');
+        this.dots.className = 'slider-dots';
+        this.dots.innerHTML = this.slides.map(() => `<button></button>`).join('');
+        this.container.appendChild(this.dots);
+      }
+    }
+
+    update() {
+      this.track.style.transitionDuration = `${this.duration}ms`;
+      this.track.style.transform = `translateX(-${this.current * 100}%)`;
+
+      if (this.showDots) {
+        [...this.dots.children].forEach((dot, index) => {
+          dot.classList.toggle('active', index === this.current);
+        });
+      }
+    }
+
+    next() {
+      this.current = (this.current + 1) % this.slides.length;
+      this.update();
+    }
+
+    prev() {
+      this.current = (this.current - 1 + this.slides.length) % this.slides.length;
+      this.update();
+    }
+
+    addEvents() {
+      if (this.showArrows) {
+        this.arrows.querySelector('.prev').onclick = () => this.prev();
+        this.arrows.querySelector('.next').onclick = () => this.next();
+      }
+
+      if (this.showDots) {
+        [...this.dots.children].forEach((dot, index) => {
+          dot.onclick = () => {
+            this.current = index;
+            this.update();
+          };
+        });
+      }
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') this.next();
+        if (e.key === 'ArrowLeft') this.prev();
+      });
+
+      this.container.addEventListener('mouseenter', () => this.stopAutoplay());
+      this.container.addEventListener('mouseleave', () => this.startAutoplay());
+    }
+
+    startAutoplay() {
+      if (!this.autoplay) return;
+      this.stopAutoplay();
+      this.timer = setInterval(() => this.next(), this.duration + 500);
+    }
+
+    stopAutoplay() {
+      clearInterval(this.timer);
+    }
+  }
+
+  new SimpleSlider('#slider', {
+    slides: ["<strong>Slide 1</strong>", "<strong>Slide 2</strong>", "<strong>Slide 3</strong>"],
+    duration: 600,
+    autoplay: true,
+    showArrows: true,
+    showDots: true
+  });
+</script>
+</body>
+</html>

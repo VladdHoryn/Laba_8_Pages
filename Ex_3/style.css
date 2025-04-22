@@ -1,0 +1,61 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    align-items: start;
+    margin: 20px;
+}
+
+.board {
+    display: flex;
+    gap: 20px;
+}
+
+.column {
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px;
+    width: 200px;
+    min-height: 400px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.column h2 {
+    text-align: center;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+#todo h2 {
+    background-color: #2196f3;
+    color: white;
+}
+
+#working h2 {
+    background-color: #ff9800;
+    color: white;
+}
+
+#done h2 {
+    background-color: #4caf50;
+    color: white;
+}
+
+.task {
+    background: white;
+    margin: 8px 0;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: grab;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.task.dragging {
+    opacity: 0.5;
+}
+
+.column.over {
+    background-color: #e0e0e0;
+}
